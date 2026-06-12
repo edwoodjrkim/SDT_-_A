@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>설문</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#FAFAF8;color:#1A1A1A;min-height:100vh;-webkit-touch-callout:none}
+.survey-page{padding:1.5rem 1rem 6rem;max-width:860px;margin:0 auto}
+.scale-info{font-size:13px;color:#555;margin-bottom:6px;line-height:1.7}
+.scale-bar{display:flex;justify-content:space-between;margin:4px 0 20px;font-size:11px;color:#AAA}
+.info-box{background:#fff;border-radius:12px;border:1px solid #E8E6E0;padding:14px 16px;margin-bottom:20px;display:flex;flex-direction:column;gap:12px}
+.info-row{display:flex;align-items:center;gap:10px}
+.info-label{font-size:13px;font-weight:500;color:#1A1A1A;white-space:nowrap;min-width:36px}
+.info-input{flex:1;border:1px solid #DDD;border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit;outline:none;background:#FAFAF8;color:#1A1A1A;transition:border .12s}
+.info-input:focus{border-color:#3A2820}
+.gender-btns{display:flex;gap:8px}
+.gender-btn{padding:8px 18px;border-radius:20px;border:1.5px solid #DDD;background:#FAFAF8;color:#888;font-size:13px;font-family:inherit;cursor:pointer;font-weight:500;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:all .12s}
+.gender-btn.active{background:#3A2820;border-color:#3A2820;color:#FBE7BE}
+.domain{margin-bottom:24px;border-radius:12px;border:1px solid #E8E6E0;overflow:hidden;background:#fff}
+.domain-hd{padding:11px 16px;display:flex;align-items:center;gap:8px}
+.domain-icon{font-size:16px}
+.domain-title{font-size:13px;font-weight:500}
+.q-table{width:100%;border-collapse:collapse}
+.q-table thead tr{border-bottom:1px solid #F0EFEB}
+.q-table th{font-size:10px;font-weight:500;color:#AAA;padding:0;text-align:center;vertical-align:bottom}
+.q-table th.q-th-left{text-align:left;padding:8px 8px 8px 14px;vertical-align:middle}
+/* 숫자 셀 — 모두 동일 높이, 레이블은 위에 */
+.th-sc{
+  width:32px;text-align:center;vertical-align:bottom;
+  padding-bottom:8px;
+}
+.th-sc .th-num{
+  font-size:11px;font-weight:600;color:#1A1A1A;
+  display:block;line-height:1;
+}
+.th-sc .th-lbl{
+  font-size:9px;color:#888;font-weight:400;
+  display:block;line-height:1.25;
+  margin-bottom:5px;word-break:keep-all;
+  min-height:32px;
+  display:flex;align-items:flex-end;justify-content:center;
+  text-align:center;
+}
+/* 레이블 없는 숫자 — 빈 공간으로 높이 맞춤 */
+.th-sc .th-lbl-empty{
+  display:block;min-height:32px;
+  margin-bottom:5px;
+}
+.q-table th.q-th-left{text-align:left;padding-left:14px}
+.q-row td{padding:10px 8px;border-bottom:0.5px solid #F7F6F2;vertical-align:middle}
+.q-row:last-child td{border-bottom:none}
+.q-num{font-size:10px;color:#CCC;min-width:28px;text-align:center}
+.q-text{font-size:12px;color:#1A1A1A;line-height:1.55;padding-left:4px}
+.sc-cell{text-align:center;width:32px}
+.sc-cell input[type=radio]{display:none}
+.sc-cell label{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:1.5px solid #DDD;cursor:pointer;font-size:11px;font-weight:500;color:#CCC;transition:all .12s;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+.sc-cell input[type=radio]:checked + label{background:#3A2820;border-color:#3A2820;color:#FBE7BE}
+.sc-cell label:active{transform:scale(.88)}
+.save-bar{position:fixed;bottom:0;left:0;right:0;padding:14px 16px 24px;background:rgba(250,250,248,.96);border-top:1px solid #E8E6E0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.save-btn{width:100%;max-width:860px;margin:0 auto;display:block;padding:15px;background:#3A2820;color:#FBE7BE;border:none;border-radius:12px;font-size:16px;font-weight:500;font-family:inherit;cursor:pointer;touch-action:manipulation}
+.save-btn:active{opacity:.85}
+.progress-info{text-align:center;font-size:11px;color:#AAA;margin-bottom:8px;max-width:860px;margin-left:auto;margin-right:auto}
+
+/* 완료 안내 오버레이 */
+.complete-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.45);z-index:200;
+  align-items:center;justify-content:center;padding:1.5rem;
+}
+.complete-overlay.show{display:flex}
+.complete-box{
+  background:#fff;border-radius:20px;padding:28px 24px;
+  max-width:400px;width:100%;
+  box-shadow:0 8px 40px rgba(0,0,0,.18);
+}
+.complete-icon{font-size:44px;text-align:center;margin-bottom:12px}
+.complete-title{font-size:20px;font-weight:600;color:#1A1A1A;text-align:center;margin-bottom:6px}
+.complete-sub{font-size:14px;color:#888;text-align:center;margin-bottom:20px;line-height:1.6}
+.complete-filename{
+  background:#FAF8F4;border-radius:10px;padding:10px 14px;
+  font-size:13px;font-weight:500;color:#3A2820;
+  border:1px solid #E8E0D0;margin-bottom:20px;word-break:break-all;
+  text-align:center;
+}
+.steps{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.step-row{display:flex;align-items:flex-start;gap:12px}
+.step-num{width:26px;height:26px;border-radius:50%;background:#3A2820;color:#FBE7BE;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{font-size:13px;color:#444;line-height:1.65}
+.step-text strong{color:#1A1A1A}
+.complete-btn{width:100%;padding:14px;background:#3A2820;color:#FBE7BE;border:none;border-radius:12px;font-size:15px;font-weight:500;font-family:inherit;cursor:pointer;touch-action:manipulation}
+.complete-btn:active{opacity:.85}
+</style>
+</head>
+<body>
+<div class="survey-page">
+  <div class="info-box">
+    <div class="info-row">
+      <label class="info-label">이름</label>
+      <input class="info-input" id="nameInput" type="text" placeholder="이름을 입력하세요" autocomplete="off">
+    </div>
+    <div class="info-row">
+      <label class="info-label">나이</label>
+      <input class="info-input" id="ageInput" type="number" placeholder="예: 28" min="10" max="99" style="max-width:100px">
+      <span style="font-size:13px;color:#888;margin-left:4px">세</span>
+    </div>
+    <div class="info-row">
+      <label class="info-label">성별</label>
+      <div class="gender-btns">
+        <button class="gender-btn" id="genderM" onclick="selectGender('남')" type="button">남</button>
+        <button class="gender-btn" id="genderF" onclick="selectGender('여')" type="button">여</button>
+      </div>
+    </div>
+  </div>
+  <div class="scale-info">각 문항을 읽고 <strong>1(전혀 그렇지 않다) ~ 7(매우 그렇다)</strong> 중 솔직하게 고르세요.</div>
+  <div class="scale-bar">
+    <span>1 — 전혀 그렇지 않다</span>
+    <span>4 — 보통이다</span>
+    <span>7 — 매우 그렇다</span>
+  </div>
+  <!-- 자율성 -->
+  <div class="domain">
+    <div class="domain-hd" style="background:#E6F1FB">
+      <div class="domain-icon">🌱</div>
+      <div class="domain-title" style="color:#185FA5">자율성 — 내 선택으로 살고 있는가</div>
+    </div>
+    <table class="q-table">
+      <thead>
+        <tr>
+          <th style="width:32px"></th>
+          <th class="q-th-left"></th>
+          <th class="th-sc">
+            <span class="th-lbl">전혀<br>그렇지<br>않다</span>
+            <span class="th-num">1</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl-empty"></span>
+            <span class="th-num">2</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl-empty"></span>
+            <span class="th-num">3</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl">보통<br>이다</span>
+            <span class="th-num">4</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl-empty"></span>
+            <span class="th-num">5</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl-empty"></span>
+            <span class="th-num">6</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl">매우<br>그렇다</span>
+            <span class="th-num">7</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="tbody-A"></tbody>
+    </table>
+  </div>
+  <!-- 유능감 -->
+  <div class="domain">
+    <div class="domain-hd" style="background:#E1F5EE">
+      <div class="domain-icon">💪</div>
+      <div class="domain-title" style="color:#085041">유능감 — 나는 할 수 있다는 느낌이 있는가</div>
+    </div>
+    <table class="q-table">
+      <thead>
+        <tr>
+          <th style="width:32px"></th>
+          <th class="q-th-left"></th>
+          <th class="th-sc">
+            <span class="th-lbl">전혀<br>그렇지<br>않다</span>
+            <span class="th-num">1</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl-empty"></span>
+            <span class="th-num">2</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl-empty"></span>
+            <span class="th-num">3</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl">보통<br>이다</span>
+            <span class="th-num">4</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl-empty"></span>
+            <span class="th-num">5</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl-empty"></span>
+            <span class="th-num">6</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl">매우<br>그렇다</span>
+            <span class="th-num">7</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="tbody-C"></tbody>
+    </table>
+  </div>
+  <!-- 관계성 -->
+  <div class="domain">
+    <div class="domain-hd" style="background:#FBEAF0">
+      <div class="domain-icon">🤝</div>
+      <div class="domain-title" style="color:#72243E">관계성 — 나는 연결되어 있는가</div>
+    </div>
+    <table class="q-table">
+      <thead>
+        <tr>
+          <th style="width:32px"></th>
+          <th class="q-th-left"></th>
+          <th class="th-sc">
+            <span class="th-lbl">전혀<br>그렇지<br>않다</span>
+            <span class="th-num">1</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl-empty"></span>
+            <span class="th-num">2</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl-empty"></span>
+            <span class="th-num">3</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl">보통<br>이다</span>
+            <span class="th-num">4</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl-empty"></span>
+            <span class="th-num">5</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl-empty"></span>
+            <span class="th-num">6</span>
+          </th>
+          <th class="th-sc">
+            <span class="th-lbl">매우<br>그렇다</span>
+            <span class="th-num">7</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody id="tbody-R"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="save-bar">
+  <div class="progress-info" id="progressInfo">0 / 30 문항 응답</div>
+  <button class="save-btn" onclick="saveSurvey()">작성 완료 — 파일 저장</button>
+</div>
+
+
+<!-- 완료 안내 오버레이 -->
+<div class="complete-overlay" id="completeOverlay">
+  <div class="complete-box">
+    <div class="complete-icon">✅</div>
+    <div class="complete-title">응답 완료!</div>
+    <div class="complete-sub">파일이 저장됐습니다.<br>아래 방법으로 연구자에게 전달해주세요.</div>
+    <div class="complete-filename" id="completeFilename"></div>
+    <div class="steps">
+      <div class="step-row">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>파일 찾기</strong><br>
+          기기의 <strong>다운로드 폴더</strong>에서 위 파일명을 찾으세요.<br>
+          <span style="font-size:11px;color:#AAA">iPhone/iPad: 파일 앱 → 다운로드</span>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>카카오톡으로 전송</strong><br>
+          연구자와의 채팅방 → 하단 <strong>+</strong> → <strong>파일</strong> 선택 → 다운로드 폴더에서 파일 첨부
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>이메일로 전송</strong> (대안)<br>
+          이메일 작성 → 첨부파일 추가 → 다운로드 폴더에서 파일 선택
+        </div>
+      </div>
+    </div>
+    <button class="complete-btn" onclick="document.getElementById('completeOverlay').classList.remove('show')">확인</button>
+  </div>
+</div>
+
+<script>
+const QS = {
+  A:[
+    {t:"내 일상의 크고 작은 결정을 스스로 내린다.",rev:false},
+    {t:"지금 내가 하는 일(또는 하지 않는 것)은 내 선택이다.",rev:false},
+    {t:"나는 내가 진짜 원하는 것이 무엇인지 알고 있다.",rev:false},
+    {t:"내 삶의 방향은 내가 정하고 있다.",rev:false},
+    {t:"나는 하고 싶은 것을 말할 수 있다.",rev:false},
+    {t:"나는 주변 사람들의 기대에 맞추어 살아왔다고 느낀다.",rev:true},
+    {t:"중요한 선택을 할 때 내 의견보다 남의 반응을 먼저 생각한다.",rev:true},
+    {t:"내가 원하는 것을 추구하기 어렵다고 느낀다.",rev:true},
+    {t:"내 삶이 내 의지가 아닌 상황에 의해 흘러가고 있다고 느낀다.",rev:true},
+    {t:"내가 하는 선택들이 진짜 나에게서 나온 것이라는 느낌이 없다.",rev:true},
+  ],
+  C:[
+    {t:"나는 내가 잘할 수 있는 것이 있다고 생각한다.",rev:false},
+    {t:"어떤 일을 시작하면 끝까지 해낼 수 있다는 믿음이 있다.",rev:false},
+    {t:"내가 노력하면 원하는 결과를 만들어낼 수 있다고 생각한다.",rev:false},
+    {t:"내 능력이 성장하고 있다는 느낌을 받은 적이 있다.",rev:false},
+    {t:"나는 새로운 것을 배우거나 시도하는 것이 두렵지 않다.",rev:false},
+    {t:"무언가를 시작하려 하면 '나는 안 될 것 같다'는 생각이 먼저 든다.",rev:true},
+    {t:"나는 다른 사람들에 비해 특별히 잘하는 것이 없다고 느낀다.",rev:true},
+    {t:"지금의 나는 사회에서 쓸모없는 존재라는 생각이 든다.",rev:true},
+    {t:"노력해도 결과가 달라지지 않을 것 같아 시도하기가 싫다.",rev:true},
+    {t:"내가 잘 해냈을 때도 운이 좋았거나 우연이었다고 생각한다.",rev:true},
+  ],
+  R:[
+    {t:"나를 진심으로 이해해주는 사람이 있다.",rev:false},
+    {t:"힘들 때 연락할 수 있는 사람이 있다.",rev:false},
+    {t:"나는 어딘가에 속해있다는 느낌을 받는다.",rev:false},
+    {t:"내 이야기를 들어주는 사람이 주변에 있다.",rev:false},
+    {t:"나는 다른 사람의 삶에 의미 있는 존재라고 느낀다.",rev:false},
+    {t:"나는 대부분의 시간을 혼자 보낸다.",rev:true},
+    {t:"내 상태를 솔직하게 말할 수 있는 사람이 없다.",rev:true},
+    {t:"사람들 사이에 있어도 혼자인 것 같다는 느낌이 든다.",rev:true},
+    {t:"나를 있는 그대로 받아들여 주는 사람이 없다고 느낀다.",rev:true},
+    {t:"내가 사라져도 알아채는 사람이 없을 것 같다는 생각이 든다.",rev:true},
+  ],
+};
+
+['A','C','R'].forEach(d=>{
+  const tbody=document.getElementById('tbody-'+d);
+  QS[d].forEach((q,i)=>{
+    const id=d+(i+1);
+    const tr=document.createElement('tr');tr.className='q-row';
+    let cells=`<td class="q-num">${id}</td><td class="q-text">${q.t}</td>`;
+    for(let v=1;v<=7;v++){
+      cells+=`<td class="sc-cell"><input type="radio" name="${id}" id="${id}_${v}" value="${v}" onchange="updateProgress();clearHighlight(this)"><label for="${id}_${v}">${v}</label></td>`;
+    }
+    tr.innerHTML=cells;tbody.appendChild(tr);
+  });
+});
+
+function updateProgress(){
+  let n=0;
+  ['A','C','R'].forEach(d=>QS[d].forEach((_,i)=>{
+    if(document.querySelector(`input[name="${d+(i+1)}"]:checked`))n++;
+  }));
+  document.getElementById('progressInfo').textContent=`${n} / 30 문항 응답`;
+}
+
+let selectedGender='';
+function selectGender(g){
+  selectedGender=g;
+  ['남','여'].forEach(v=>{
+    document.getElementById(v==='남'?'genderM':'genderF').classList.toggle('active',v===g);
+  });
+}
+
+function getScore(domain){
+  let total=0;
+  QS[domain].forEach((q,i)=>{
+    const el=document.querySelector(`input[name="${domain+(i+1)}"]:checked`);
+    if(!el)return;
+    let v=parseInt(el.value);
+    if(q.rev)v=8-v;
+    total+=v;
+  });
+  return total;
+}
+
+function showComplete(filename){
+  document.getElementById('completeFilename').textContent = filename;
+  document.getElementById('completeOverlay').classList.add('show');
+}
+
+function clearHighlight(radio){
+  const row = radio.closest('tr');
+  if(row){ row.style.background=''; row.classList.remove('unanswered'); }
+}
+
+function saveSurvey(){
+  const name=document.getElementById('nameInput').value.trim()||'이름 없음';
+  const age=document.getElementById('ageInput').value.trim()||'미기재';
+  const gender=selectedGender||'미기재';
+  // 미응답 확인
+  let unanswered=0;
+  ['A','C','R'].forEach(d=>QS[d].forEach((_,i)=>{
+    if(!document.querySelector(`input[name="${d+(i+1)}"]:checked`))unanswered++;
+  }));
+  // 미응답 항목 찾기
+  const missing = [];
+  ['A','C','R'].forEach(d=>QS[d].forEach((_,i)=>{
+    const id=d+(i+1);
+    if(!document.querySelector(`input[name="${id}"]:checked`)) missing.push(id);
+  }));
+
+  if(missing.length > 0){
+    // 기존 하이라이트 제거
+    document.querySelectorAll('.q-row.unanswered').forEach(el=>{
+      el.classList.remove('unanswered');
+      el.style.background='';
+    });
+    // 미응답 행 하이라이트
+    missing.forEach(id=>{
+      const radio = document.querySelector(`input[name="${id}"]`);
+      if(radio){
+        const row = radio.closest('tr');
+        if(row){
+          row.style.background='#FFF3F0';
+          row.classList.add('unanswered');
+        }
+      }
+    });
+    // 첫 번째 미응답 항목으로 스크롤
+    const firstRadio = document.querySelector(`input[name="${missing[0]}"]`);
+    if(firstRadio) firstRadio.closest('tr').scrollIntoView({behavior:'smooth', block:'center'});
+
+    // 알림 메시지
+    const domainNames = {A:'자율성', C:'유능감', R:'관계성'};
+    const grouped = {};
+    missing.forEach(id=>{
+      const d=id[0];
+      if(!grouped[d]) grouped[d]=[];
+      grouped[d].push(id);
+    });
+    const msg = Object.entries(grouped).map(([d,ids])=>
+      `${domainNames[d]}: ${ids.join(', ')}`
+    ).join('\n');
+    alert(`아직 ${missing.length}개 문항에 응답하지 않았습니다.\n\n미응답 항목:\n${msg}\n\n해당 항목이 빨간색으로 표시됩니다.`);
+    return;
+  }
+  // 전체 응답 완료 시 하이라이트 제거
+  document.querySelectorAll('.q-row.unanswered').forEach(el=>{
+    el.classList.remove('unanswered'); el.style.background='';
+  });
+
+  const scores={A:getScore('A'),C:getScore('C'),R:getScore('R')};
+  const raw={};
+  ['A','C','R'].forEach(d=>QS[d].forEach((_,i)=>{
+    const id=d+(i+1);
+    const el=document.querySelector(`input[name="${id}"]:checked`);
+    raw[id]=el?parseInt(el.value):null;
+  }));
+  const now=new Date();
+  const ts=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const record={id:Date.now(),name,age,gender,ts,scores,raw};
+
+  // JSON 파일로 바로 다운로드 (로컬 저장 없음)
+  const filename = `SDT_${name}_${now.toISOString().slice(0,10)}.json`;
+  const blob=new Blob([JSON.stringify(record,null,2)],{type:'application/json;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  a.click();
+
+  // ✅ Google Sheets 자동 전송
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw3FBcomdzr0m4sSZq0UJvjVt8-DHQlY7OFwNmt4tTnLsqbWbabrk5GH7eBq9WgzI9KeQ/exec";
+
+  if (SCRIPT_URL !== "여기에_Apps_Script_URL_붙여넣기") {
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(record)
+    })
+    .then(() => console.log('✅ Google Sheets 전송 완료'))
+    .catch(err => console.log('❌ 전송 실패:', err));
+  }
+
+  // 완료 안내 팝업 표시
+  showComplete(filename);
+}
+</script>
+</body>
+</html>
