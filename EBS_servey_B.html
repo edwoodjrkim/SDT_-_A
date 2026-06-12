@@ -61,6 +61,7 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#FAF
 .save-bar{position:fixed;bottom:0;left:0;right:0;padding:14px 16px 24px;background:rgba(250,250,248,.96);border-top:1px solid #E8E6E0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .save-btn{width:100%;max-width:860px;margin:0 auto;display:block;padding:15px;background:#3A2820;color:#FBE7BE;border:none;border-radius:12px;font-size:16px;font-weight:500;font-family:inherit;cursor:pointer;touch-action:manipulation}
 .save-btn:active{opacity:.85}
+.save-btn:disabled{opacity:.5;cursor:not-allowed}
 .progress-info{text-align:center;font-size:11px;color:#AAA;margin-bottom:8px;max-width:860px;margin-left:auto;margin-right:auto}
 
 /* 완료 안내 오버레이 */
@@ -432,12 +433,17 @@ function saveSurvey(){
   const ts=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   const record={id:Date.now(),name,age,gender,job,group:'B',ts,scores,raw};
 
+  // ✅ 버튼 비활성화 — 중복 제출 방지
+  const btn = document.querySelector('.save-btn');
+  btn.disabled = true;
+  btn.textContent = '제출 완료 ✓';
+
   // ✅ Google Sheets 자동 전송
-  // ⬇⬇⬇ 아래 URL에 Apps Script URL을 붙여넣으세요 ⬇⬇⬇
+  // ⬇⬇⬇ 아래 URL에 본인의 Apps Script URL을 붙여넣으세요 ⬇⬇⬇
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw3FBcomdzr0m4sSZq0UJvjVt8-DHQlY7OFwNmt4tTnLsqbWbabrk5GH7eBq9WgzI9KeQ/exec";
   // ⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆⬆
 
-  if (SCRIPT_URL !== "https://script.google.com/macros/s/AKfycbw3FBcomdzr0m4sSZq0UJvjVt8-DHQlY7OFwNmt4tTnLsqbWbabrk5GH7eBq9WgzI9KeQ/exec") {
+  if (SCRIPT_URL !== "여기에_Apps_Script_URL_붙여넣기") {
     fetch(SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
