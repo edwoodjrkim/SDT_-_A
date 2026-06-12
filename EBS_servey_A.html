@@ -112,6 +112,15 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#FAF
         <button class="gender-btn" id="genderF" onclick="selectGender('여')" type="button">여</button>
       </div>
     </div>
+    <div class="info-row" style="flex-direction:column;align-items:flex-start;gap:8px">
+      <label class="info-label">쉬었음 기간</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;width:100%">
+        <button class="gender-btn" id="rest1" onclick="selectRest('1년 미만')" type="button">1년 미만</button>
+        <button class="gender-btn" id="rest2" onclick="selectRest('1년 이상~ 3년 미만')" type="button">1년 이상~ 3년 미만</button>
+        <button class="gender-btn" id="rest3" onclick="selectRest('3년 이상~ 5년 미만')" type="button">3년 이상~ 5년 미만</button>
+        <button class="gender-btn" id="rest4" onclick="selectRest('5년 이상')" type="button">5년 이상</button>
+      </div>
+    </div>
   </div>
   <div class="scale-info">각 문항을 읽고 <strong>1(전혀 그렇지 않다) ~ 7(매우 그렇다)</strong> 중 솔직하게 고르세요.</div>
   <div class="scale-bar">
@@ -338,6 +347,14 @@ function selectGender(g){
   });
 }
 
+let selectedRest='';
+function selectRest(r){
+  selectedRest=r;
+  ['1년 미만','1년 이상~ 3년 미만','3년 이상~ 5년 미만','5년 이상'].forEach((v,i)=>{
+    document.getElementById('rest'+(i+1)).classList.toggle('active',v===r);
+  });
+}
+
 function getScore(domain){
   let total=0;
   QS[domain].forEach((q,i)=>{
@@ -364,6 +381,13 @@ function saveSurvey(){
   const name=document.getElementById('nameInput').value.trim()||'이름 없음';
   const age=document.getElementById('ageInput').value.trim()||'미기재';
   const gender=selectedGender||'미기재';
+  const rest=selectedRest||'미기재';
+
+  // 쉬었음 기간 미선택 확인
+  if(!selectedRest){
+    alert('쉬었음 기간을 선택해주세요.');
+    return;
+  }
   // 미응답 확인
   let unanswered=0;
   ['A','C','R'].forEach(d=>QS[d].forEach((_,i)=>{
@@ -425,7 +449,7 @@ function saveSurvey(){
   }));
   const now=new Date();
   const ts=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  const record={id:Date.now(),name,age,gender,job:'미기재',group:'A',ts,scores,raw};
+  const record={id:Date.now(),name,age,gender,rest,job:'미기재',group:'A',ts,scores,raw};
 
   // ✅ 버튼 즉시 비활성화 — 중복 제출 완전 방지
   const btn = document.querySelector('.save-btn');
