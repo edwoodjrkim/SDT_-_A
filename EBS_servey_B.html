@@ -61,7 +61,6 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#FAF
 .save-bar{position:fixed;bottom:0;left:0;right:0;padding:14px 16px 24px;background:rgba(250,250,248,.96);border-top:1px solid #E8E6E0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .save-btn{width:100%;max-width:860px;margin:0 auto;display:block;padding:15px;background:#3A2820;color:#FBE7BE;border:none;border-radius:12px;font-size:16px;font-weight:500;font-family:inherit;cursor:pointer;touch-action:manipulation}
 .save-btn:active{opacity:.85}
-.save-btn:disabled{opacity:.5;cursor:not-allowed}
 .progress-info{text-align:center;font-size:11px;color:#AAA;margin-bottom:8px;max-width:860px;margin-left:auto;margin-right:auto}
 
 /* 완료 안내 오버레이 */
@@ -270,7 +269,7 @@ body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#FAF
     <div class="complete-icon">✅</div>
     <div class="complete-title">응답 완료!</div>
     <div class="complete-sub">설문에 참여해주셔서 감사합니다.<br>응답이 자동으로 저장되었습니다.</div>
-    <button class="complete-btn" onclick="document.getElementById('completeOverlay').classList.remove('show')">확인</button>
+    <button class="complete-btn" onclick="closeSurvey()">확인</button>
   </div>
 </div>
 
@@ -433,10 +432,11 @@ function saveSurvey(){
   const ts=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
   const record={id:Date.now(),name,age,gender,job,group:'B',ts,scores,raw};
 
-  // ✅ 버튼 비활성화 — 중복 제출 방지
+  // ✅ 버튼 즉시 비활성화 — 중복 제출 완전 방지
   const btn = document.querySelector('.save-btn');
   btn.disabled = true;
   btn.textContent = '제출 완료 ✓';
+  btn.style.opacity = '0.5';
 
   // ✅ Google Sheets 자동 전송
   // ⬇⬇⬇ 아래 URL에 본인의 Apps Script URL을 붙여넣으세요 ⬇⬇⬇
@@ -456,6 +456,16 @@ function saveSurvey(){
 
   // 완료 팝업 표시
   document.getElementById('completeOverlay').classList.add('show');
+}
+
+// 확인 버튼 클릭 시 설문 전체를 완료 화면으로 교체
+function closeSurvey() {
+  document.body.innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:#FAFAF8;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;padding:2rem;text-align:center">
+      <div style="font-size:60px;margin-bottom:20px">✅</div>
+      <div style="font-size:22px;font-weight:600;color:#1A1A1A;margin-bottom:10px">응답이 완료되었습니다</div>
+      <div style="font-size:15px;color:#888;line-height:1.7">설문에 참여해주셔서 감사합니다.<br>창을 닫으셔도 됩니다.</div>
+    </div>`;
 }
 </script>
 </body>
